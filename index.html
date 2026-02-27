@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Poker Poker</title>
+
+  <!-- PWA / Add to Home Screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Poker Poker"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="theme-color" content="#FBF7F4"/>
+  <meta name="application-name" content="Poker Poker"/>
+
+  <!-- App icon: inline SVG as data URI (works without a server) -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23FBF7F4'/%3E%3Crect x='30' y='55' width='72' height='95' rx='12' fill='%23F5B8B8' stroke='%23C86060' stroke-width='4' transform='rotate(-12 66 102)'/%3E%3Crect x='88' y='48' width='72' height='95' rx='12' fill='%23CEC0F0' stroke='%237858C8' stroke-width='4' transform='rotate(10 124 95)'/%3E%3Ctext x='48' y='118' font-size='32' fill='%23C86060' font-family='serif'%3E%E2%99%A0%3C/text%3E%3Ctext x='108' y='110' font-size='32' fill='%237858C8' font-family='serif'%3E%E2%99%A5%3C/text%3E%3C/svg%3E"/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23FBF7F4'/%3E%3Crect x='30' y='55' width='72' height='95' rx='12' fill='%23F5B8B8' stroke='%23C86060' stroke-width='4' transform='rotate(-12 66 102)'/%3E%3Crect x='88' y='48' width='72' height='95' rx='12' fill='%23CEC0F0' stroke='%237858C8' stroke-width='4' transform='rotate(10 124 95)'/%3E%3Ctext x='48' y='118' font-size='32' fill='%23C86060' font-family='serif'%3E%E2%99%A0%3C/text%3E%3Ctext x='108' y='110' font-size='32' fill='%237858C8' font-family='serif'%3E%E2%99%A5%3C/text%3E%3C/svg%3E"/>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    html, body, #root { height: 100%; margin: 0; padding: 0; background: #FBF7F4; }
+    body { -webkit-font-smoothing: antialiased; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+
+// ─── SVG Icon Components (proper React components, always render) ──────────
+const IcHome = ({ c = "#2A1F1F", s = 20 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/>
+    <path d="M9 21V12h6v9"/>
+  </svg>
+);
+const IcTable = ({ c = "#2A1F1F", s = 20 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <ellipse cx="12" cy="12" rx="10" ry="6"/>
+    <line x1="2" y1="12" x2="22" y2="12"/>
+    <line x1="12" y1="6" x2="12" y2="18"/>
+  </svg>
+);
+const IcHistory = ({ c = "#2A1F1F", s = 20 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <polyline points="12 7 12 12 15 15"/>
+  </svg>
+);
+const IcPlus = ({ c = "#fff", s = 16 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.8" strokeLinecap="round">
+    <line x1="12" y1="5" x2="12" y2="19"/>
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+const IcMinus = ({ c = "#fff", s = 16 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.8" strokeLinecap="round">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+const IcCash = ({ c = "#C87840", s = 18 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="6" width="20" height="12" rx="2"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+const IcWalk = ({ c = "#C87840", s = 18 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="13" cy="4" r="1.5"/>
+    <path d="M10 8.5l-2 4.5h5l1.5 5"/>
+    <path d="M14 8.5l2 3.5"/>
+    <path d="M8 13l-1 5"/>
+  </svg>
+);
+const IcTrash = ({ c = "#C85858", s = 16 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/>
+    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+    <path d="M10 11v6"/><path d="M14 11v6"/>
+    <path d="M9 6V4h6v2"/>
+  </svg>
+);
+const IcCheck = ({ c = "#fff", s = 16 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+const IcSearch = ({ c = "#B8A8A8", s = 16 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round">
+    <circle cx="11" cy="11" r="7"/>
+    <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+  </svg>
+);
+const IcSettings = ({ c = "#B8A8A8", s = 18 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+  </svg>
+);
+const IcArrow = ({ c = "#4A9E78", s = 16 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+    <polyline points="12 5 19 12 12 19"/>
+  </svg>
+);
+// Cute playing card fan icon for Live Table tab
+const IcCards = ({ c = "#2A1F1F", s = 20 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="6" width="11" height="14" rx="2" transform="rotate(-10 2 6)"/>
+    <rect x="9" y="5" width="11" height="14" rx="2" transform="rotate(8 9 5)"/>
+    <text x="5" y="17" fontSize="6" fill={c} stroke="none" fontWeight="bold">♠</text>
+    <text x="13" y="15" fontSize="6" fill={c} stroke="none" fontWeight="bold">♥</text>
+  </svg>
+);
+
+// ─── i18n ─────────────────────────────────────────────────────────────────
+const T = {
+  en: {
+    title: "Poker Poker",
+    sub: "See You in the Big Pot!",
+    today: (d) => d.toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" }),
+    dateFmt: (d) => new Date(d+"T00:00:00").toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" }),
+    buyIn: "Buy-in $", chipRate: "Chips / $1",
+    edit: "Edit", ok: "OK", cancel: "Cancel",
+    addPlayers: "Add players (comma or newline separated)",
+    addPlayersLabel: "Add Players",
+    addPlayersHint: "Separate names with commas or new lines",
+    addBtn: "Add to Table",
+    namePH: "Alex, Mike, Sarah...",
+    orSingle: "or add one at a time",
+    singlePH: "Name...", addOne: "Add",
+    rejoin: "Today's players",
+    noName: "Please enter a name",
+    liveTable: "Live Table",
+    noPlayers: "No players yet — add some on the Home tab!",
+    rebuy: "Buy-in", buyout: "Buy-out", cashOut: "Cash Out",
+    left2: "Left",
+    allCashOut: "All Cashed Out — Show Payments",
+    payments: "Payments", pays: "pays",
+    allEven: "Everyone is even!",
+    closeTable: "Close Table & Save to History",
+    history: "History", noHistory: "No tables closed yet.",
+    myStats: "My Summary",
+    searchName: "Type a name to see their record...",
+    search: "Search", net: "Net", tables: "Tables",
+    noPlayer: "No record found.",
+    pending: "—", invested: "invested",
+    chipsHint: (r) => `${r} chips = $1`,
+    saveOk: "Saved!", chipsOk: "Chips saved!",
+    added: (n) => `${n} added!`,
+    tableClosed: "Table saved to history!",
+    tonight: "See You in the Big Pot!",
+  },
+  zh: {
+    title: "Poker Poker",
+    sub: "大锅等你拿～",
+    today: (d) => d.toLocaleDateString("zh-CN", { month:"long", day:"numeric", weekday:"long" }),
+    dateFmt: (d) => new Date(d+"T00:00:00").toLocaleDateString("zh-CN", { month:"long", day:"numeric" }),
+    buyIn: "底注 $", chipRate: "筹码 / $1",
+    edit: "修改", ok: "确认", cancel: "取消",
+    addPlayers: "添加玩家（逗号或换行分隔）",
+    addPlayersLabel: "添加玩家",
+    addPlayersHint: "用逗号或换行分隔多个名字",
+    addBtn: "加入牌桌",
+    namePH: "Alex, Mike, Sarah...",
+    orSingle: "或逐个添加",
+    singlePH: "名字...", addOne: "添加",
+    rejoin: "今日玩家",
+    noName: "请输入名字",
+    liveTable: "实时牌桌",
+    noPlayers: "还没有玩家 — 在主页添加！",
+    rebuy: "买入", buyout: "买出", cashOut: "兑现",
+    left2: "离场",
+    allCashOut: "全员兑现 — 显示结算",
+    payments: "结算", pays: "付给",
+    allEven: "大家都持平！",
+    closeTable: "关闭牌桌并保存",
+    history: "历史", noHistory: "还没有记录。",
+    myStats: "我的记录",
+    searchName: "输入名字查看历史...",
+    search: "查询", net: "净额", tables: "局数",
+    noPlayer: "未找到记录。",
+    pending: "—", invested: "投入",
+    chipsHint: (r) => `${r}筹码 = $1`,
+    saveOk: "已保存！", chipsOk: "筹码已保存！",
+    added: (n) => `${n} 已加入！`,
+    tableClosed: "已保存到历史！",
+    tonight: "今晚手气爆棚！",
+  }
+};
+
+// ─── Palette ───────────────────────────────────────────────────────────────
+const C = {
+  bg:"#FBF7F4", surface:"#FFFFFF", border:"#EDE4DF",
+  text:"#2A1F1F", sub:"#B8A8A8",
+  rose:"#F5B8B8", roseDk:"#C86060",
+  mint:"#B0DECA", mintDk:"#4A9E78",
+  peach:"#F8D8B8", peachDk:"#C87840",
+  lav:"#CEC0F0", lavDk:"#7858C8",
+  yellow:"#F8E8A0", yellowDk:"#B89020",
+  green:"#48A878", red:"#C85858",
+  chip:"#F2EAEA",
+};
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function nameToId(n) {
+  const id = n.trim().toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_\u4e00-\u9fff]/g,"");
+  return id || null;
+}
+function chipsToNet(chips, buyins, buyouts, buyInAmt, rate) {
+  // net = (buyouts - buyins)*buyInAmt + dollarsInHand
+  const dollarsInHand = chips / rate;
+  return Math.round(((buyouts - buyins) * buyInAmt + dollarsInHand) * 100) / 100;
+}
+function calcSettlements(balances) {
+  const pos=[], neg=[];
+  for (const [name,amt] of Object.entries(balances)) {
+    if (amt > 0.01) pos.push({name,amt});
+    else if (amt < -0.01) neg.push({name,amt:-amt});
+  }
+  pos.sort((a,b)=>b.amt-a.amt); neg.sort((a,b)=>b.amt-a.amt);
+  const txns=[]; let i=0, j=0;
+  while(i<pos.length && j<neg.length){
+    const s=Math.min(pos[i].amt, neg[j].amt);
+    if(s>0.01) txns.push({from:neg[j].name, to:pos[i].name, amt:Math.round(s*100)/100});
+    pos[i].amt-=s; neg[j].amt-=s;
+    if(pos[i].amt<0.01) i++;
+    if(neg[j].amt<0.01) j++;
+  }
+  return txns;
+}
+
+// ─── Default state ─────────────────────────────────────────────────────────
+const defaultState = {
+  buyInAmount: 10,
+  chipRate: 200,
+  session: { date: todayStr(), players:{}, showPayments:false, payments:[] },
+  history: [],
+  lang: "en",
+};
+
+function load() {
+  try {
+    const s = localStorage.getItem("pokerpoker_v2");
+    return s ? { ...defaultState, ...JSON.parse(s) } : defaultState;
+  } catch { return defaultState; }
+}
+function persist(s) { try { localStorage.setItem("pokerpoker_v2", JSON.stringify(s)); } catch {} }
+
+// ─── Main App ──────────────────────────────────────────────────────────────
+function App() {
+  const [st, setSt]   = useState(load);
+  const [tab, setTab] = useState("home");
+  const [toast, setToast] = useState(null);
+  const toastRef = useRef(null);
+
+  // Home
+  const [bulkInput, setBulkInput]     = useState("");
+  const [singleInput, setSingleInput] = useState("");
+  const [singleError, setSingleError] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [editBuyIn, setEditBuyIn]     = useState(false);
+  const [editRate, setEditRate]       = useState(false);
+  const [buyInDraft, setBuyInDraft]   = useState("");
+  const [rateDraft, setRateDraft]     = useState("");
+
+  // Chip modal
+  const [chipModal, setChipModal]   = useState(null);
+  const [chipDraft, setChipDraft]   = useState("");
+  const [chipCalc, setChipCalc]     = useState(null);
+
+  // History search
+  const [histSearch, setHistSearch] = useState("");
+  const [histResult, setHistResult] = useState(null);
+
+  const t = T[st.lang];
+
+  useEffect(() => { persist(st); }, [st]);
+
+  function showToast(msg, color=C.mint) {
+    clearTimeout(toastRef.current);
+    setToast({msg,color});
+    toastRef.current = setTimeout(()=>setToast(null), 2000);
+  }
+
+  function ensureSession(s) {
+    const today = todayStr();
+    if (!s.session || s.session.date !== today) {
+      return { ...s, session:{ date:today, players:{}, showPayments:false, payments:[] } };
+    }
+    return s;
+  }
+
+  // ── Add players ────────────────────────────────────────────────────────
+  function addPlayerToState(name) {
+    const id = nameToId(name);
+    if (!id) return;
+    setSt(prev => {
+      let next = ensureSession(prev);
+      if (!next.session.players[id]) {
+        next = { ...next, session: { ...next.session, players: {
+          ...next.session.players,
+          [id]: { name:name.trim(), buyins:1, buyouts:0, chips:null, leftEarly:false }
+        }}};
+      }
+      return next;
+    });
+  }
+
+  function handleBulkAdd() {
+    const names = bulkInput.split(/[,\n，]+/).map(s=>s.trim()).filter(Boolean);
+    if (!names.length) return;
+    names.forEach(addPlayerToState);
+    setBulkInput("");
+    showToast(t.added(names.length > 1 ? `${names.length} players` : names[0]), C.mintDk);
+  }
+
+  function handleSingleAdd() {
+    const name = singleInput.trim();
+    if (!name) { setSingleError(true); return; }
+    addPlayerToState(name);
+    setSingleInput(""); setSingleError(false);
+    showToast(t.added(name), C.mintDk);
+  }
+
+  // ── Session helpers ────────────────────────────────────────────────────
+  function getPlayers() {
+    return Object.entries(st.session?.players || {})
+      .map(([pid,d]) => ({pid,...d}))
+      .sort((a,b) => {
+        if (a.leftEarly !== b.leftEarly) return a.leftEarly ? 1 : -1;
+        return a.name.localeCompare(b.name);
+      });
+  }
+
+  function updatePlayer(pid, patch) {
+    setSt(prev => {
+      const cur = prev.session.players[pid] || {};
+      return { ...prev, session: { ...prev.session, players: {
+        ...prev.session.players, [pid]: { ...cur, ...patch }
+      }}};
+    });
+  }
+
+  function adjustBuyins(pid, delta) {
+    const cur = st.session?.players[pid] || {};
+    updatePlayer(pid, { buyins: Math.max(0, (cur.buyins||1) + delta) });
+  }
+
+  function adjustBuyouts(pid, delta) {
+    const cur = st.session?.players[pid] || {};
+    updatePlayer(pid, { buyouts: Math.max(0, (cur.buyouts||0) + delta) });
+  }
+
+  function toggleLeft(pid) {
+    const cur = st.session?.players[pid] || {};
+    updatePlayer(pid, { leftEarly: !cur.leftEarly });
+  }
+
+  function removePlayer(pid) {
+    setSt(prev => {
+      const newPlayers = { ...prev.session.players };
+      delete newPlayers[pid];
+      return { ...prev, session: { ...prev.session, players: newPlayers } };
+    });
+  }
+
+  // ── Chip modal ─────────────────────────────────────────────────────────
+  function openChip(pid, name) {
+    const ex = st.session?.players[pid]?.chips;
+    setChipModal({pid, name});
+    setChipDraft(ex != null ? String(ex) : "");
+    setChipCalc(null);
+  }
+
+  function calcChip() {
+    const chips = parseFloat(chipDraft);
+    if (isNaN(chips)) return;
+    const p = st.session?.players[chipModal.pid] || { buyins:1 };
+    setChipCalc(chipsToNet(chips, p.buyins||1, p.buyouts||0, st.buyInAmount, st.chipRate));
+  }
+
+  function confirmChip() {
+    const chips = parseFloat(chipDraft);
+    if (isNaN(chips)) return;
+    const pid = chipModal.pid;
+    const p = st.session?.players[pid] || { buyins:1 };
+    const net = chipsToNet(chips, p.buyins||1, p.buyouts||0, st.buyInAmount, st.chipRate);
+    updatePlayer(pid, { chips, net });
+    setChipModal(null);
+    showToast(t.chipsOk, C.peachDk);
+  }
+
+  // ── All cash out ────────────────────────────────────────────────────────
+  function handleAllCashOut() {
+    const players = getPlayers();
+    const balances = {};
+    for (const p of players) {
+      if (p.chips != null) {
+        balances[p.name] = p.net ?? chipsToNet(p.chips, p.buyins||1, p.buyouts||0, st.buyInAmount, st.chipRate);
+      }
+    }
+    const payments = calcSettlements(balances);
+    setSt(prev => ({ ...prev, session: { ...prev.session, showPayments:true, payments } }));
+  }
+
+  // ── Close table ─────────────────────────────────────────────────────────
+  function closeTable() {
+    setSt(prev => {
+      const s = prev.session;
+      const entry = { date:s.date, players:s.players, payments:s.payments||[], buyInAmount:prev.buyInAmount, chipRate:prev.chipRate };
+      return {
+        ...prev,
+        history: [entry, ...prev.history],
+        session: { date:todayStr(), players:{}, showPayments:false, payments:[] }
+      };
+    });
+    showToast(t.tableClosed, C.lavDk);
+    setTab("history");
+  }
+
+  // ── Delete history ──────────────────────────────────────────────────────
+  function deleteHistory(idx) {
+    setSt(prev => ({ ...prev, history: prev.history.filter((_,i)=>i!==idx) }));
+  }
+
+  // ── History search ──────────────────────────────────────────────────────
+  function searchHistory() {
+    const query = histSearch.trim().toLowerCase();
+    if (!query) return;
+    let totalNet=0, wins=0, losses=0, tables=0;
+    for (const h of st.history) {
+      for (const [pid,p] of Object.entries(h.players)) {
+        const pname = (p.name||pid).toLowerCase();
+        if (pname.includes(query) || pid.includes(query)) {
+          tables++;
+          const net = p.net ?? (p.chips!=null ? chipsToNet(p.chips,p.buyins||1,p.buyouts||0,st.buyInAmount,st.chipRate) : 0);
+          totalNet += net;
+          if (net>0) wins++; else if(net<0) losses++;
+        }
+      }
+    }
+    if (!tables) { setHistResult("none"); return; }
+    setHistResult({ name:histSearch.trim(), totalNet:Math.round(totalNet*100)/100, wins, losses, tables });
+  }
+
+  const players = getPlayers();
+  const cashedCount = players.filter(p=>p.chips!=null).length;
+  const allCashedOut = players.length>0 && cashedCount===players.length;
+  const showPayments = st.session?.showPayments;
+  const payments = st.session?.payments || [];
+  // Sum of all net results — should be 0 if house is balanced
+  const totalNet = players
+    .filter(p=>p.net!=null)
+    .reduce((s,p)=>s+p.net, 0);
+  const isBalanced = Math.abs(totalNet) < 0.02;
+
+  // ── Render ──────────────────────────────────────────────────────────────
+  return (
+    <div style={{ fontFamily:"'Nunito','Helvetica Neue',sans-serif", background:C.bg, minHeight:"100vh", color:C.text }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+        *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+        input,textarea{font-family:'Nunito',sans-serif;}
+        input:focus,textarea:focus{outline:none;}
+        button{font-family:'Nunito',sans-serif;cursor:pointer;}
+        button:active{transform:scale(0.93);}
+        ::-webkit-scrollbar{display:none;}
+        @keyframes pop{0%{transform:scale(0.8);opacity:0}65%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+        @keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fi{from{opacity:0}to{opacity:1}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+        .pop{animation:pop 0.26s cubic-bezier(.34,1.56,.64,1) both}
+        .up{animation:up 0.26s ease both}
+        .fi{animation:fi 0.2s ease both}
+        .pulse{animation:pulse 2s ease-in-out infinite}
+        .s1{animation-delay:.04s}.s2{animation-delay:.08s}.s3{animation-delay:.12s}
+        .s4{animation-delay:.16s}.s5{animation-delay:.20s}.s6{animation-delay:.24s}
+        .s7{animation-delay:.28s}.s8{animation-delay:.32s}.s9{animation-delay:.36s}.s10{animation-delay:.40s}
+      `}</style>
+
+      {/* Toast */}
+      {toast && (
+        <div className="pop" style={{ position:"fixed",top:64,left:"50%",transform:"translateX(-50%)",
+          background:toast.color,color:"#fff",fontSize:13,fontWeight:800,
+          padding:"9px 22px",borderRadius:30,zIndex:999,whiteSpace:"nowrap",
+          boxShadow:"0 6px 24px rgba(0,0,0,0.15)",pointerEvents:"none" }}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Chip Modal */}
+      {chipModal && (
+        <div className="fi" onClick={e=>e.target===e.currentTarget&&setChipModal(null)}
+          style={{ position:"fixed",inset:0,background:"rgba(42,31,31,0.45)",zIndex:200,
+            display:"flex",alignItems:"flex-end",justifyContent:"center" }}>
+          <div className="pop" style={{ background:C.surface,borderRadius:"24px 24px 0 0",
+            padding:"24px 20px 48px",width:"100%",maxWidth:430,
+            boxShadow:"0 -8px 40px rgba(0,0,0,0.13)" }}>
+            {/* Handle */}
+            <div style={{ width:36,height:4,borderRadius:4,background:C.border,margin:"0 auto 20px" }}/>
+            <div style={{ fontWeight:900,fontSize:19,marginBottom:6 }}>{chipModal.name}</div>
+            {(() => {
+              const mp = st.session?.players[chipModal.pid] || {};
+              const bi = mp.buyins||1, bo = mp.buyouts||0;
+              return (
+                <div style={{ background:C.bg,borderRadius:12,padding:"10px 12px",marginBottom:16,fontSize:12,color:C.sub,lineHeight:1.7 }}>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}>
+                    <span>Buy-in</span><span style={{ fontWeight:800,color:C.roseDk }}>×{bi} = −${bi*st.buyInAmount}</span>
+                  </div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}>
+                    <span>Buy-out</span><span style={{ fontWeight:800,color:C.mintDk }}>×{bo} = +${bo*st.buyInAmount}</span>
+                  </div>
+                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:`1px dashed ${C.border}`,marginTop:4,paddingTop:4 }}>
+                    <span>Net so far</span><span style={{ fontWeight:800,color:C.text }}>${(bo-bi)*st.buyInAmount} + chips ÷ {st.chipRate}</span>
+                  </div>
+                </div>
+              );
+            })()}
+            {/* Input row */}
+            <div style={{ background:C.chip,borderRadius:14,padding:"4px 16px",display:"flex",
+              alignItems:"center",gap:10,marginBottom:8,border:`2px solid ${C.peach}` }}>
+              <IcCash c={C.peachDk} s={20}/>
+              <input autoFocus value={chipDraft}
+                onChange={e=>{ setChipDraft(e.target.value); setChipCalc(null); }}
+                onKeyDown={e=>e.key==="Enter"&&calcChip()}
+                type="number" placeholder="e.g. 5000 or -400"
+                style={{ flex:1,border:"none",background:"transparent",fontSize:22,fontWeight:900,
+                  color:C.text,padding:"12px 0" }}/>
+            </div>
+            <div style={{ fontSize:11,color:C.sub,marginBottom:16 }}>
+              Chips in hand · enter negative if underwater
+            </div>
+            {/* Result */}
+            {chipCalc != null && (
+              <div className="pop" style={{ borderRadius:16,padding:"14px 16px",marginBottom:14,
+                background:chipCalc>=0?"#EDFBF3":"#FFF0F0",
+                border:`2px solid ${chipCalc>=0?C.mint:C.rose}` }}>
+                <div style={{ fontSize:10,color:C.sub,textTransform:"uppercase",letterSpacing:0.8,marginBottom:4 }}>Result</div>
+                <div style={{ fontWeight:900,fontSize:30,color:chipCalc>=0?C.green:C.red }}>
+                  {chipCalc>=0?"+":"-"}${Math.abs(chipCalc)}
+                </div>
+              </div>
+            )}
+            {/* Buttons */}
+            <div style={{ display:"flex",gap:10 }}>
+              {chipCalc==null ? (
+                <>
+                  <button onClick={()=>setChipModal(null)}
+                    style={{ flex:1,background:C.chip,border:"none",borderRadius:12,padding:"13px",
+                      fontSize:14,fontWeight:800,color:C.sub }}>
+                    {t.cancel}
+                  </button>
+                  <button onClick={calcChip}
+                    style={{ flex:2,background:C.yellow,border:"none",borderRadius:12,padding:"13px",
+                      fontSize:14,fontWeight:800,color:C.yellowDk }}>
+                    Calculate →
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={()=>setChipCalc(null)}
+                    style={{ flex:1,background:C.chip,border:"none",borderRadius:12,padding:"13px",
+                      fontSize:14,fontWeight:800,color:C.sub }}>
+                    ← Back
+                  </button>
+                  <button onClick={confirmChip}
+                    style={{ flex:2,background:C.text,border:"none",borderRadius:12,padding:"13px",
+                      fontSize:14,fontWeight:900,color:"#fff",
+                      display:"flex",alignItems:"center",justifyContent:"center",gap:8 }}>
+                    <IcCheck c="#fff" s={16}/> Confirm
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* App wrapper */}
+      <div style={{ maxWidth:430,margin:"0 auto",minHeight:"100vh",display:"flex",flexDirection:"column" }}>
+
+        {/* ── Header ── */}
+        <header style={{ background:C.surface,borderBottom:`2px solid ${C.border}`,
+          padding:"14px 18px 12px",position:"sticky",top:0,zIndex:10 }}>
+          <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+            {/* Title → home */}
+            <button onClick={()=>setTab("home")}
+              style={{ background:"none",border:"none",padding:0,textAlign:"left" }}>
+              <div style={{ fontWeight:900,fontSize:20,color:C.text,lineHeight:1.15 }}>{t.title}</div>
+            </button>
+
+            <div style={{ display:"flex",alignItems:"center",gap:4 }}>
+              {/* Lang toggle */}
+              <button onClick={()=>setSt(p=>({...p,lang:p.lang==="en"?"zh":"en"}))}
+                style={{ background:C.lav,border:"none",borderRadius:8,padding:"5px 9px",
+                  fontSize:11,fontWeight:800,color:C.lavDk,marginRight:2 }}>
+                {st.lang==="en"?"中文":"EN"}
+              </button>
+              {/* Nav: table + history only */}
+              {[
+                { key:"table",   Icon: IcCards },
+                { key:"history", Icon: IcHistory },
+              ].map(({key, Icon:Ic}) => (
+                <button key={key}
+                  onClick={()=>setTab(key)}
+                  style={{ width:34,height:34,borderRadius:10,border:"none",
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    background:tab===key?C.text:"transparent",transition:"background 0.18s" }}>
+                  <Ic c={tab===key?"#fff":C.sub} s={18}/>
+                </button>
+              ))}
+            </div>
+          </div>
+        </header>
+
+        {/* ── Main content ── */}
+        <main style={{ flex:1,padding:"20px 16px 52px",overflowY:"auto" }}>
+
+          {/* ════════════════ HOME ════════════════ */}
+          {tab==="home" && (
+            <div className="up">
+              <div style={{ marginBottom:22 }}>
+                <div style={{ display:"flex",alignItems:"center",gap:10,marginBottom:4 }}>
+                  <span style={{ fontSize:28,lineHeight:1 }}>🃏</span>
+                  <div>
+                    <div style={{ fontWeight:900,fontSize:22,lineHeight:1.2 }}>{t.tonight}</div>
+                    <div style={{ color:C.sub,fontSize:12,marginTop:3 }}>{t.today(new Date())}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bulk add */}
+              <div style={{ background:C.surface,border:`2px solid ${C.border}`,borderRadius:18,
+                padding:"16px",marginBottom:12 }}>
+                <div style={{ fontSize:11,color:C.mintDk,fontWeight:800,textTransform:"uppercase",
+                  letterSpacing:0.7,marginBottom:8 }}>{t.addPlayersLabel}</div>
+                <textarea value={bulkInput} onChange={e=>setBulkInput(e.target.value)} rows={2}
+                  placeholder={t.namePH}
+                  style={{ width:"100%",border:`1.5px solid ${C.border}`,borderRadius:12,
+                    background:C.bg,padding:"10px 12px",fontSize:14,fontWeight:700,
+                    color:C.text,resize:"none",lineHeight:1.5 }}/>
+                <div style={{ fontSize:10,color:C.sub,marginTop:5,paddingLeft:2 }}>{t.addPlayersHint}</div>
+                <button onClick={handleBulkAdd}
+                  style={{ width:"100%",marginTop:10,background:C.mint,border:"none",borderRadius:12,
+                    padding:"13px",fontSize:14,fontWeight:900,color:C.mintDk,
+                    display:"flex",alignItems:"center",justifyContent:"center",gap:8 }}>
+                  <IcPlus c={C.mintDk} s={16}/> {t.addBtn}
+                </button>
+              </div>
+
+              {/* Single add */}
+              <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:10 }}>
+                <span style={{ color:C.border,fontSize:13 }}>♠</span>
+                <span style={{ fontSize:11,color:C.sub,fontWeight:600 }}>{t.orSingle}</span>
+                <span style={{ color:C.border,fontSize:13 }}>♠</span>
+              </div>
+              <div style={{ display:"flex",gap:8,marginBottom:20 }}>
+                <input value={singleInput}
+                  onChange={e=>{ setSingleInput(e.target.value); setSingleError(false); }}
+                  onKeyDown={e=>e.key==="Enter"&&handleSingleAdd()} placeholder={t.singlePH}
+                  style={{ flex:1,border:`2px solid ${singleError?C.rose:C.border}`,borderRadius:12,
+                    background:C.surface,padding:"11px 14px",fontSize:15,fontWeight:700,
+                    color:C.text,transition:"border-color 0.2s" }}/>
+                <button onClick={handleSingleAdd}
+                  style={{ background:C.text,border:"none",borderRadius:12,padding:"0 18px",
+                    fontSize:14,fontWeight:800,color:"#fff",whiteSpace:"nowrap" }}>
+                  {t.addOne}
+                </button>
+              </div>
+
+              {/* Today's players */}
+              {players.length > 0 && (
+                <>
+                  <div style={{ display:"flex",alignItems:"center",gap:6,marginBottom:10 }}>
+                    <span style={{ fontSize:14 }}>🎲</span>
+                    <span style={{ fontSize:11,color:C.sub,fontWeight:700,textTransform:"uppercase",letterSpacing:0.7 }}>{t.rejoin}</span>
+                  </div>
+                  <div style={{ display:"flex",flexWrap:"wrap",gap:8,marginBottom:16 }}>
+                    {players.map(p => (
+                      <button key={p.pid} onClick={()=>setTab("table")}
+                        style={{ background:p.chips!=null?C.text:C.surface,
+                          color:p.chips!=null?"#fff":C.text,
+                          border:`2px solid ${p.chips!=null?C.text:C.border}`,
+                          borderRadius:999,padding:"8px 16px",fontSize:13,fontWeight:800,
+                          display:"flex",alignItems:"center",gap:6,transition:"all 0.18s" }}>
+                        {p.name}
+                        {p.chips!=null && p.net!=null && (
+                          <span style={{ fontSize:10,opacity:0.75 }}>
+                            {p.net>=0?`+$${p.net}`:`-$${Math.abs(p.net)}`}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={()=>setTab("table")}
+                    style={{ width:"100%",background:C.text,border:"none",borderRadius:16,
+                      padding:"15px",fontSize:15,fontWeight:900,color:"#fff",
+                      display:"flex",alignItems:"center",justifyContent:"center",gap:10 }}>
+                    <IcCards c="#fff" s={18}/> {t.liveTable} ({players.length})
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ════════════════ LIVE TABLE ════════════════ */}
+          {tab==="table" && (
+            <div className="up">
+              <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20 }}>
+                <div>
+                  <div style={{ fontWeight:900,fontSize:20 }}>{t.liveTable}</div>
+                  <div style={{ fontSize:12,color:C.sub,marginTop:2 }}>
+                    {st.session?.date ? t.dateFmt(st.session.date) : ""} · {players.length} players
+                  </div>
+                </div>
+              </div>
+
+              {players.length===0 && (
+                <div style={{ textAlign:"center",color:C.sub,marginTop:48 }}>
+                  <div style={{ display:"flex",justifyContent:"center",marginBottom:12,opacity:0.35 }}>
+                    <IcCards c={C.sub} s={48}/>
+                  </div>
+                  <div style={{ fontSize:14 }}>{t.noPlayers}</div>
+                </div>
+              )}
+
+              {/* Player cards */}
+              {players.map((p,i) => {
+                const dc = `s${Math.min(i+1,10)}`;
+                const hasResult = p.chips != null;
+                const buyins = p.buyins||1;
+                const invested = buyins * st.buyInAmount;
+                return (
+                  <div key={p.pid} className={`up ${dc}`} style={{
+                    background:p.leftEarly?"#FFF8F4":C.surface,
+                    border:`2px solid ${p.leftEarly?C.peach:C.border}`,
+                    borderRadius:20,padding:"14px 16px",marginBottom:10,
+                  }}>
+                    {/* Top row: name + left-early + remove + net */}
+                    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10 }}>
+                      <div style={{ display:"flex",alignItems:"center",gap:7,flex:1,minWidth:0 }}>
+                        <span style={{ fontWeight:900,fontSize:17,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{p.name}</span>
+                        {/* Left early toggle — inline next to name */}
+                        <button onClick={()=>toggleLeft(p.pid)}
+                          style={{ flexShrink:0,height:22,borderRadius:6,padding:"0 7px",
+                            background:p.leftEarly?C.peach:"transparent",
+                            border:`1.5px solid ${p.leftEarly?C.peachDk:C.border}`,
+                            display:"flex",alignItems:"center",gap:3 }}>
+                          <IcWalk c={p.leftEarly?C.peachDk:C.sub} s={12}/>
+                          {p.leftEarly && <span style={{ fontSize:9,fontWeight:800,color:C.peachDk }}>{t.left2}</span>}
+                        </button>
+                        {/* Remove */}
+                        <button onClick={()=>removePlayer(p.pid)}
+                          style={{ flexShrink:0,width:22,height:22,borderRadius:6,
+                            background:"transparent",border:`1.5px solid ${C.border}`,
+                            display:"flex",alignItems:"center",justifyContent:"center" }}>
+                          <IcTrash c={C.sub} s={11}/>
+                        </button>
+                      </div>
+                      {hasResult ? (
+                        <span style={{ fontWeight:900,fontSize:20,color:p.net>=0?C.green:C.red,flexShrink:0,marginLeft:8 }}>
+                          {p.net>=0?"+":"-"}${Math.abs(p.net)}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize:12,color:C.sub,fontWeight:600,flexShrink:0,marginLeft:8 }}>{t.pending}</span>
+                      )}
+                    </div>
+
+                    {/* Controls row — buy-in / buy-out / cash out */}
+                    <div style={{ display:"flex",gap:10,alignItems:"center" }}>
+
+                      {/* Re-Buy */}
+                      <div style={{ display:"flex",alignItems:"center",gap:6 }}>
+                        <span style={{ fontSize:11,fontWeight:700,color:C.roseDk }}>{t.rebuy}</span>
+                        <button onClick={()=>adjustBuyins(p.pid,-1)}
+                          style={{ width:26,height:26,borderRadius:8,background:"transparent",
+                            border:`1.5px solid ${C.rose}`,color:C.roseDk,fontSize:15,fontWeight:700,
+                            display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1 }}>−</button>
+                        <span style={{ fontWeight:900,fontSize:18,color:C.roseDk,minWidth:16,textAlign:"center" }}>{buyins}</span>
+                        <button onClick={()=>adjustBuyins(p.pid,1)}
+                          style={{ width:26,height:26,borderRadius:8,background:C.rose,
+                            border:"none",color:"#fff",fontSize:15,fontWeight:700,
+                            display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1 }}>+</button>
+                      </div>
+
+                      <div style={{ width:1,height:22,background:C.border,flexShrink:0 }}/>
+
+                      {/* Buy-Out */}
+                      <div style={{ display:"flex",alignItems:"center",gap:6 }}>
+                        <span style={{ fontSize:11,fontWeight:700,color:C.mintDk }}>{t.buyout}</span>
+                        <button onClick={()=>adjustBuyouts(p.pid,-1)}
+                          style={{ width:26,height:26,borderRadius:8,background:"transparent",
+                            border:`1.5px solid ${C.mint}`,color:C.mintDk,fontSize:15,fontWeight:700,
+                            display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1 }}>−</button>
+                        <span style={{ fontWeight:900,fontSize:18,color:C.mintDk,minWidth:16,textAlign:"center" }}>{p.buyouts||0}</span>
+                        <button onClick={()=>adjustBuyouts(p.pid,1)}
+                          style={{ width:26,height:26,borderRadius:8,background:C.mint,
+                            border:"none",color:C.mintDk,fontSize:15,fontWeight:700,
+                            display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1 }}>+</button>
+                      </div>
+
+                      <div style={{ flex:1 }}/>
+
+                      {/* Cash out */}
+                      <button onClick={()=>openChip(p.pid,p.name)}
+                        style={{ background:hasResult?"#F2F2F2":C.yellow,
+                          border:`1.5px solid ${hasResult?"#E4E4E4":C.yellowDk}`,
+                          borderRadius:10,padding:"5px 11px",fontSize:12,fontWeight:800,
+                          color:hasResult?C.sub:C.yellowDk,flexShrink:0,
+                          display:"flex",alignItems:"center",gap:4 }}>
+                        <IcCash c={hasResult?C.sub:C.yellowDk} s={13}/>
+                        <span>{hasResult ? `${p.chips}` : t.cashOut}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* All Cash Out button */}
+              {players.length>0 && !showPayments && (
+                <button onClick={handleAllCashOut}
+                  style={{ width:"100%",marginTop:8,
+                    background:allCashedOut?C.text:C.chip,
+                    border:`2px solid ${allCashedOut?C.text:C.border}`,
+                    borderRadius:16,padding:"15px",fontSize:14,fontWeight:900,
+                    color:allCashedOut?"#fff":C.sub,transition:"all 0.2s" }}>
+                  {allCashedOut ? t.allCashOut : `${cashedCount}/${players.length} cashed out — ${t.allCashOut}`}
+                </button>
+              )}
+
+              {/* Payments + Close Table */}
+              {showPayments && (
+                <div className="pop" style={{ marginTop:14 }}>
+                  {/* Balance warning */}
+                  {!isBalanced && (
+                    <div className="up" style={{ background:"#FFF3CD",border:`2px solid #F0C040`,
+                      borderRadius:14,padding:"12px 16px",marginBottom:10,
+                      display:"flex",alignItems:"flex-start",gap:10 }}>
+                      <span style={{ fontSize:20,flexShrink:0 }}>⚠️</span>
+                      <div>
+                        <div style={{ fontWeight:800,fontSize:13,color:"#8A6000",marginBottom:3 }}>
+                          Table doesn't balance!
+                        </div>
+                        <div style={{ fontSize:12,color:"#8A6000",lineHeight:1.5 }}>
+                          Net total is <strong>{totalNet>0?"+":""}{Math.round(totalNet*100)/100}</strong>. Someone's chips may be entered incorrectly — the house should always net to $0.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payments card */}
+                  <div style={{ background:"#EDFBF3",border:`2px solid ${C.mint}`,
+                    borderRadius:18,padding:"16px",marginBottom:10 }}>
+                    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12 }}>
+                      <div style={{ fontWeight:800,fontSize:14,color:C.mintDk,display:"flex",alignItems:"center",gap:6 }}>
+                        <span style={{ fontSize:16 }}>💸</span> {t.payments}
+                      </div>
+                      {/* Update payments button */}
+                      <button onClick={handleAllCashOut}
+                        style={{ background:C.surface,border:`1.5px solid ${C.mint}`,
+                          borderRadius:20,padding:"4px 12px",fontSize:11,fontWeight:800,color:C.mintDk }}>
+                        ↻ Update
+                      </button>
+                    </div>
+                    {payments.length===0 ? (
+                      <div style={{ fontWeight:700,color:C.mintDk,fontSize:14 }}>{t.allEven}</div>
+                    ) : payments.map((tx,i)=>(
+                      <div key={i} className={`up s${Math.min(i+1,10)}`}
+                        style={{ display:"flex",alignItems:"center",gap:8,padding:"10px 12px",
+                          marginBottom:8,background:C.surface,borderRadius:14,
+                          border:`1.5px solid ${C.border}` }}>
+                        <span style={{ fontWeight:800,fontSize:14,color:C.red,flex:1 }}>{tx.from}</span>
+                        <IcArrow c={C.mintDk} s={16}/>
+                        <span style={{ fontWeight:800,fontSize:14,color:C.green,flex:1,textAlign:"right",marginRight:8 }}>{tx.to}</span>
+                        <span style={{ fontWeight:900,fontSize:17,background:C.yellow,
+                          color:C.yellowDk,padding:"4px 12px",borderRadius:10 }}>${tx.amt}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Close table — disabled if unbalanced */}
+                  <button onClick={isBalanced ? closeTable : undefined}
+                    style={{ width:"100%",
+                      background:isBalanced?"linear-gradient(135deg,#CEC0F0,#B8A8E8)":"#EEEEEE",
+                      border:"none",borderRadius:16,padding:"15px",fontSize:14,fontWeight:900,
+                      color:isBalanced?C.lavDk:C.sub,
+                      display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                      cursor:isBalanced?"pointer":"not-allowed",
+                      opacity:isBalanced?1:0.7 }}>
+                    <IcCheck c={isBalanced?C.lavDk:C.sub} s={16}/>
+                    {isBalanced ? t.closeTable : "Fix balances to close table"}
+                  </button>
+                  {!isBalanced && (
+                    <div style={{ textAlign:"center",fontSize:11,color:"#A08020",marginTop:6 }}>
+                      Update chip amounts until the table nets to $0
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════════════════ HISTORY ════════════════ */}
+          {tab==="history" && (
+            <div className="up">
+              <div style={{ fontWeight:900,fontSize:20,marginBottom:20 }}>{t.history}</div>
+
+              {/* My Summary search */}
+              <div style={{ background:C.surface,border:`2px solid ${C.border}`,borderRadius:18,
+                padding:"16px",marginBottom:18 }}>
+                <div style={{ display:"flex",alignItems:"center",gap:6,marginBottom:10 }}>
+                  <span style={{ fontSize:16 }}>🔮</span>
+                  <span style={{ fontSize:11,color:C.lavDk,fontWeight:800,textTransform:"uppercase",letterSpacing:0.7 }}>{t.myStats}</span>
+                </div>
+                <div style={{ display:"flex",gap:8,marginBottom:12 }}>
+                  <div style={{ flex:1,display:"flex",alignItems:"center",gap:8,
+                    background:C.bg,borderRadius:12,padding:"0 12px",
+                    border:`1.5px solid ${C.border}` }}>
+                    <IcSearch c={C.sub} s={16}/>
+                    <input value={histSearch}
+                      onChange={e=>{ setHistSearch(e.target.value); setHistResult(null); }}
+                      onKeyDown={e=>e.key==="Enter"&&searchHistory()}
+                      placeholder={t.searchName}
+                      style={{ flex:1,border:"none",background:"transparent",fontSize:14,
+                        fontWeight:700,color:C.text,padding:"11px 0" }}/>
+                  </div>
+                  <button onClick={searchHistory}
+                    style={{ background:C.text,border:"none",borderRadius:12,padding:"0 16px",
+                      fontSize:13,fontWeight:800,color:"#fff",whiteSpace:"nowrap" }}>
+                    {t.search}
+                  </button>
+                </div>
+
+                {histResult==="none" && (
+                  <div style={{ fontSize:13,color:C.sub,fontWeight:600,textAlign:"center" }}>
+                    {t.noPlayer}
+                  </div>
+                )}
+                {histResult && histResult!=="none" && (
+                  <div className="pop" style={{ background:"#F4F0FF",borderRadius:14,
+                    padding:"14px",border:`1.5px solid ${C.lav}` }}>
+                    <div style={{ fontWeight:900,fontSize:16,marginBottom:10 }}>{histResult.name}</div>
+                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8 }}>
+                      {[
+                        {l:t.tables, v:histResult.tables, c:C.lavDk},
+                        {l:t.net, v:`${histResult.totalNet>=0?"+":"-"}$${Math.abs(histResult.totalNet)}`, c:histResult.totalNet>=0?C.green:C.red},
+                        {l:"W / L", v:`${histResult.wins}W ${histResult.losses}L`, c:C.sub},
+                      ].map(({l,v,c})=>(
+                        <div key={l} style={{ textAlign:"center" }}>
+                          <div style={{ fontSize:9,color:C.sub,textTransform:"uppercase",letterSpacing:0.7,marginBottom:4 }}>{l}</div>
+                          <div style={{ fontWeight:900,fontSize:16,color:c }}>{v}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Past tables */}
+              {st.history.length===0 && (
+                <div style={{ textAlign:"center",color:C.sub,marginTop:24,fontSize:14 }}>{t.noHistory}</div>
+              )}
+
+              {st.history.map((h,hi) => {
+                const hPlayers = Object.entries(h.players)
+                  .map(([pid,p])=>({pid,...p}))
+                  .sort((a,b)=>(b.net??0)-(a.net??0));
+                return (
+                  <div key={hi} className={`up s${Math.min(hi+1,10)}`}
+                    style={{ background:C.surface,border:`2px solid ${C.border}`,
+                      borderRadius:18,padding:"16px",marginBottom:12 }}>
+                    {/* Header */}
+                    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12 }}>
+                      <div>
+                        <div style={{ fontWeight:800,fontSize:15,marginBottom:4 }}>{t.dateFmt(h.date)}</div>
+                        <div style={{ display:"flex",gap:6 }}>
+                          <span style={{ fontSize:10,fontWeight:700,color:C.roseDk,background:"#FFF0F0",borderRadius:6,padding:"2px 7px",display:"flex",alignItems:"center",gap:3 }}>
+                            <span style={{ fontSize:11 }}>♠</span>${h.buyInAmount??st.buyInAmount}
+                          </span>
+                          <span style={{ fontSize:10,fontWeight:700,color:C.lavDk,background:"#F4F0FF",borderRadius:6,padding:"2px 7px",display:"flex",alignItems:"center",gap:3 }}>
+                            <span style={{ fontSize:11 }}>♥</span>{h.chipRate??st.chipRate}/1
+                          </span>
+                          <span style={{ fontSize:10,color:C.sub,fontWeight:600,alignSelf:"center" }}>{hPlayers.length} players</span>
+                        </div>
+                      </div>
+                      <button onClick={()=>deleteHistory(hi)}
+                        style={{ background:"#FFF0F0",border:"none",borderRadius:8,
+                          padding:"5px 8px",display:"flex",alignItems:"center",gap:3,flexShrink:0,marginTop:2 }}>
+                        <IcTrash c={C.red} s={15}/>
+                      </button>
+                    </div>
+                    {/* Player rows */}
+                    {hPlayers.map((p,pi)=>{
+                      const net = p.net ?? (p.chips!=null
+                        ? chipsToNet(p.chips,p.buyins||1,p.buyouts||0,st.buyInAmount,st.chipRate) : 0);
+                      return (
+                        <div key={p.pid}
+                          style={{ display:"flex",justifyContent:"space-between",alignItems:"center",
+                            padding:"7px 0",
+                            borderBottom:pi<hPlayers.length-1?`1px dashed ${C.border}`:"none" }}>
+                          <div style={{ display:"flex",alignItems:"center",gap:6 }}>
+                            <span style={{ fontWeight:700,fontSize:14 }}>{p.name}</span>
+                            {p.leftEarly && <IcWalk c={C.peachDk} s={13}/>}
+                          </div>
+                          <span style={{ fontWeight:900,fontSize:15,color:net>=0?C.green:C.red }}>
+                            {net>=0?"+":"-"}${Math.abs(net)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {/* Payments */}
+                    {h.payments?.length>0 && (
+                      <div style={{ marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}` }}>
+                        {h.payments.map((tx,ti)=>(
+                          <div key={ti}
+                            style={{ display:"flex",alignItems:"center",gap:6,fontSize:12,
+                              color:C.sub,marginBottom:4 }}>
+                            <span style={{ fontWeight:700,color:C.red }}>{tx.from}</span>
+                            <IcArrow c={C.sub} s={12}/>
+                            <span style={{ fontWeight:700,color:C.green }}>{tx.to}</span>
+                            <span style={{ fontWeight:800,color:C.text,marginLeft:"auto" }}>${tx.amt}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </main>
+
+        {/* Footer — settings (home only) */}
+        {tab==="home" && <div style={{ borderTop:`2px solid ${C.border}`, background:C.surface, padding:"14px 16px 20px" }}>
+          {/* Settings row */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
+            {/* Buy-in */}
+            <div style={{ background:"#FFF0F0", borderRadius:14, padding:"12px 14px", border:`1.5px solid ${C.rose}` }}>
+              <div style={{ display:"flex",alignItems:"center",gap:5,marginBottom:6 }}>
+                <span style={{ fontSize:14,color:C.rose }}>♠</span>
+                <span style={{ fontSize:14,color:C.rose }}>♣</span>
+                <span style={{ fontSize:10,color:C.roseDk,fontWeight:800,textTransform:"uppercase",letterSpacing:0.7 }}>{t.buyIn}</span>
+              </div>
+              {editBuyIn ? (
+                <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                  <input autoFocus value={buyInDraft} onChange={e=>setBuyInDraft(e.target.value)}
+                    type="number" min="1"
+                    style={{ flex:1, border:"none", borderBottom:`2px solid ${C.rose}`,
+                      background:"transparent", fontSize:18, fontWeight:900, color:C.text, padding:"2px 0" }}/>
+                  <button onClick={()=>{ const v=parseFloat(buyInDraft); if(v>0) setSt(p=>({...p,buyInAmount:v})); setEditBuyIn(false); }}
+                    style={{ background:C.rose, border:"none", borderRadius:8, padding:"4px 10px",
+                      fontSize:13, fontWeight:800, color:"#fff" }}>✓</button>
+                </div>
+              ) : (
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span style={{ fontWeight:900, fontSize:22, color:C.roseDk }}>${st.buyInAmount}</span>
+                  <button onClick={()=>{ setBuyInDraft(st.buyInAmount); setEditBuyIn(true); }}
+                    style={{ background:C.chip, border:"none", borderRadius:8, padding:"3px 10px",
+                      fontSize:11, fontWeight:700, color:C.sub }}>{t.edit}</button>
+                </div>
+              )}
+            </div>
+            {/* Chip rate */}
+            <div style={{ background:"#F4F0FF", borderRadius:14, padding:"12px 14px", border:`1.5px solid ${C.lav}` }}>
+              <div style={{ display:"flex",alignItems:"center",gap:5,marginBottom:6 }}>
+                <span style={{ fontSize:14,color:C.lav }}>♥</span>
+                <span style={{ fontSize:14,color:C.lav }}>♦</span>
+                <span style={{ fontSize:10,color:C.lavDk,fontWeight:800,textTransform:"uppercase",letterSpacing:0.7 }}>{t.chipRate}</span>
+              </div>
+              {editRate ? (
+                <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                  <input autoFocus value={rateDraft} onChange={e=>setRateDraft(e.target.value)}
+                    type="number" min="1"
+                    style={{ flex:1, border:"none", borderBottom:`2px solid ${C.lav}`,
+                      background:"transparent", fontSize:18, fontWeight:900, color:C.text, padding:"2px 0" }}/>
+                  <button onClick={()=>{ const v=parseFloat(rateDraft); if(v>0) setSt(p=>({...p,chipRate:v})); setEditRate(false); }}
+                    style={{ background:C.lav, border:"none", borderRadius:8, padding:"4px 10px",
+                      fontSize:13, fontWeight:800, color:C.lavDk }}>✓</button>
+                </div>
+              ) : (
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span style={{ fontWeight:900, fontSize:22, color:C.lavDk }}>{st.chipRate}</span>
+                  <button onClick={()=>{ setRateDraft(st.chipRate); setEditRate(true); }}
+                    style={{ background:C.chip, border:"none", borderRadius:8, padding:"3px 10px",
+                      fontSize:11, fontWeight:700, color:C.sub }}>{t.edit}</button>
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Suit divider */}
+          <div style={{ display:"flex", justifyContent:"center", gap:10 }}>
+            {[["♠",C.text],["♥",C.rose],["♦",C.rose],["♣",C.text]].map(([s,c])=>(
+              <span key={s} style={{ fontSize:12, color:c, opacity:0.2 }}>{s}</span>
+            ))}
+          </div>
+        </div>}
+      </div>
+    </div>
+  );
+}
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
